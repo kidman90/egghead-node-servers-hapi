@@ -1,20 +1,42 @@
-'use strict';
-const Hapi = require('hapi');
+(async () => {
+  const Hapi = require('hapi');
 
-const server = new Hapi.Server({
-  host: 'localhost',
-  port: 3000
-});
+  const server = new Hapi.Server({
+    host: 'localhost',
+    port: 3000
+  });
 
-server.route({
-  method: 'GET',
-  path: '/',
-  handler: (request, h) => {
-    return 'hello hapi';
-  }
-});
+  const options = {
+    ops: {
+      interval: 1000
+    },
+    reporters: {
+      myConsoleReporter: [{
+        module: 'good-squeeze',
+        name: 'Squeeze',
+        args: [{ log: ['error'], response: '*' }]
+      }, {
+        module: 'good-console'
+      }, 'stdout']
+    }
+  };
 
-server
-  .start()
-  .then(() => console.log(`Started at: ${server.info.uri}`))
-  .catch(err => console.log(err));
+  await server.register({
+    plugin: require('good'),
+    options
+  });
+
+  await server.route({
+    method: 'GET',
+    path: '/',
+    handler: (request, h) => {
+      server.log('error', 'Oh no!');
+      server.log('info', 'Replying');
+      return 'hello hapi';
+    }
+  });
+
+  await server.start();
+
+  console.log(`Started at: ${server.info.uri}`);
+})();
