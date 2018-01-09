@@ -26,14 +26,23 @@
     options
   });
 
+  function handler(request, h) {
+    // server.log('error', 'Oh no!');
+    // server.log('info', 'Replying');
+    // return 'hello hapi';
+    return request.params;
+  }
+
   await server.route({
     method: 'GET',
-    path: '/',
-    handler: (request, h) => {
-      server.log('error', 'Oh no!');
-      server.log('info', 'Replying');
-      return 'hello hapi';
-    }
+    path: '/{stuff*}',
+    handler
+  });
+
+  await server.route({
+    method: 'GET',
+    path: '/files/{file}.jpg',
+    handler
   });
 
   await server.start();
