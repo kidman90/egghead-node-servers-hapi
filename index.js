@@ -30,12 +30,16 @@
     // server.log('error', 'Oh no!');
     // server.log('info', 'Replying');
     // return 'hello hapi';
-    
+
     // return request.params;
-    
+
     // return h.response({hello: 'hapi'});
     // return h.response(new Error('oops'));
-    return h.response('Not Found').code(404);
+    return h.response('Not Found')
+      .code(418)
+      .type('text/plain')
+      .header('hello', 'world')
+      .state('hello', 'world');
   }
 
   await server.route({
