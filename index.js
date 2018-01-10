@@ -1,57 +1,32 @@
 (async () => {
   const Hapi = require('hapi');
+  const Path = require('path');
 
   const server = new Hapi.Server({
     host: 'localhost',
     port: 3000
   });
 
-  const options = {
-    ops: {
-      interval: 1000
-    },
-    reporters: {
-      myConsoleReporter: [{
-        module: 'good-squeeze',
-        name: 'Squeeze',
-        args: [{ log: ['error'], response: '*' }]
-      }, {
-        module: 'good-console'
-      }, 'stdout']
-    }
-  };
-
   await server.register({
-    plugin: require('good'),
-    options
-  });
-
-  function handler(request, h) {
-    // server.log('error', 'Oh no!');
-    // server.log('info', 'Replying');
-    // return 'hello hapi';
-
-    // return request.params;
-
-    // return h.response({hello: 'hapi'});
-    // return h.response(new Error('oops'));
-    return h.response('Not Found')
-      .code(418)
-      .type('text/plain')
-      .header('hello', 'world')
-      .state('hello', 'world');
-  }
-
-  await server.route({
-    method: 'GET',
-    path: '/{stuff*}',
-    handler
+    plugin: require('inert')
   });
 
   await server.route({
     method: 'GET',
-    path: '/files/{file}.jpg',
-    handler
+    // path: '/hapi.png',
+    path: '/{param*}',
+    // handler: function (request, h) {
+    //   var path = Path.join(__dirname, 'public/hapi.png');
+    //   return h.file(path);
+    // }
+    // handler: {
+    //   file: Path.join(__dirname, 'public/hapi.png')
+    // }
+    handler: {
+      directory: {
+        path: Path.join(__dirname, 'public')
+      }
+    }
   });
 
   await server.start();
