@@ -1,33 +1,27 @@
 (async () => {
   const Hapi = require('hapi');
-  const Joi = require('joi');
 
   const server = new Hapi.Server({
     host: 'localhost',
     port: 3000
   });
 
+  await server.state('hello', {
+    ttl: 60 * 60 * 1000,
+    isHttpOnly: true,
+    encoding: 'iron',
+    password: 'a5LewP10pXNbWUdYQakUfVlk1jUVuLuUU6W1WEE302k',
+    isSecure: false
+  })
+
   await server.route({
-    method: ['POST', 'PUT'],
-    path: '/user/{id?}',
+    method: 'GET',
+    path: '/',
     config: {
-      validate: {
-        params: Joi.object({
-          id: Joi.number()
-        }),
-        payload: Joi.object({
-          id: Joi.number()
-        }).unknown(),
-        query: Joi.object({
-          id: Joi.number()
-        })
-      },
       handler: function (request, h) {
-        return {
-          params: request.params,
-          query: request.query,
-          payload: request.payload
-        };
+        let hello = request.state.hello.name;
+        return h.response(`Cookies! ${hello}`)
+          .state('hello', { name: 'Maciek' });
       }
     }
   });
