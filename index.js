@@ -1,41 +1,34 @@
 (async () => {
   const Hapi = require('hapi');
-  const Boom = require('boom');
+  const Joi = require('joi');
 
   const server = new Hapi.Server({
     host: 'localhost',
     port: 3000
   });
 
-  await server.register({
-    plugin: require('vision')
-  });
-
-  await server.views({
-    engines: {
-      hbs: require('handlebars')
-    },
-    relativeTo: __dirname,
-    path: 'views'
-  });
-
-  await server.ext({
-    type: 'onPreResponse',
-    method: function (request, h) {
-      let resp = request.response;
-      if (!resp.isBoom) return h.continue;
-
-      return h.view('error', resp.output.payload)
-        .code(resp.output.statusCode);
-    }
-  });
-
   await server.route({
-    method: 'GET',
-    path: '/{name?}',
-    handler: function (request, h) {
-      // return Boom.badRequest();
-      return Boom.notFound();
+    method: ['POST', 'PUT'],
+    path: '/user/{id?}',
+    config: {
+      validate: {
+        params: Joi.object({
+          id: Joi.number()
+        }),
+        payload: Joi.object({
+          id: Joi.number()
+        }).unknown(),
+        query: Joi.object({
+          id: Joi.number()
+        })
+      },
+      handler: function (request, h) {
+        return {
+          params: request.params,
+          query: request.query,
+          payload: request.payload
+        };
+      }
     }
   });
 
