@@ -6,24 +6,18 @@
     port: 3000
   });
 
-  await server.register({
-    plugin: require('vision')
-  });
-
-  await server.views({
-    engines: {
-      hbs: require('handlebars')
-    },
-    relativeTo: __dirname,
-    layout: true,
-    path: 'views'
-  });
-
   await server.route({
-    method: 'GET',
-    path: '/{name?}',
+    method: ['POST', 'PUT'],
+    path: '/',
+    config: {
+      payload: {
+        output: 'data',
+        parse: false,
+        allow: 'application/json'
+      }
+    },
     handler: function (request, h) {
-      return h.view('home', { name: request.params.name || 'World' });
+      return h.response(request.payload);
     }
   });
 
