@@ -1,67 +1,41 @@
 (async () => {
   const Hapi = require('hapi');
+  const Boom = require('boom');
 
   const server = new Hapi.Server({
     host: 'localhost',
     port: 3000
   });
 
-  server.ext({
-    type: 'onRequest',
-    method: function (request, h) {
-      console.log('onRequest');
-      request.setUrl('/');
-      request.setMethod('GET');
-      return h.continue;
-    }
+  await server.register({
+    plugin: require('vision')
   });
 
-  server.ext({
-    type: 'onPreAuth',
-    method: function (request, h) {
-      console.log('onPreAuth');
-      return h.continue;
-    }
+  await server.views({
+    engines: {
+      hbs: require('handlebars')
+    },
+    relativeTo: __dirname,
+    path: 'views'
   });
 
-  server.ext({
-    type: 'onPostAuth',
-    method: function (request, h) {
-      console.log('onPostAuth');
-      return h.continue;
-    }
-  });
-
-  server.ext({
-    type: 'onPreHandler',
-    method: function (request, h) {
-      console.log('onPreHandler');
-      return h.continue;
-    }
-  });
-
-  server.ext({
-    type: 'onPostHandler',
-    method: function (request, h) {
-      console.log('onPostHandler');
-      return h.continue;
-    }
-  });
-
-  server.ext({
+  await server.ext({
     type: 'onPreResponse',
     method: function (request, h) {
-      console.log('onPreResponse');
-      return h.continue;
+      let resp = request.response;
+      if (!resp.isBoom) return h.continue;
+
+      return h.view('error', resp.output.payload)
+        .code(resp.output.statusCode);
     }
   });
 
   await server.route({
     method: 'GET',
-    path: '/',
+    path: '/{name?}',
     handler: function (request, h) {
-      console.log('handler');
-      return 'hello world';
+      // return Boom.badRequest();
+      return Boom.notFound();
     }
   });
 
